@@ -52,36 +52,49 @@ public class Johnson_Algo {
     
     public static ArrayList<Vertex> fileToArray(String filename) {
         ArrayList<Vertex> arr = new ArrayList<>();
-        Scanner inputF;
+        Scanner s;
         int col = 0;
         int row = 0;
         int w = 0;
         int v = 0;
+        String st = null;
         try {
-            inputF = new Scanner(new File(filename));
-            while (inputF.hasNextInt()) {
-                w = inputF.nextInt();
-                if(col == 0 && row == 0){   //if first run
-                    v = w;
-                    col++;
-                    col = v; //to create new row
-                }
-                else if(col == v){  //if new row
-                    col = 1;
-                    row++;
-                    arr.add(new Vertex(row));
-                    if(w == 0)
+            s = new Scanner(new File(filename));
+            //s.useDelimiter("");
+            while (s.hasNext()){
+                if(s.hasNextInt()){
+                    w = s.nextInt();
+                    if(col == 0 && row == 0){   //if first run
+                        v = w;
+                        col++;
+                        col = v; //to create new row
+                    }
+                    else if(col == v){  //if new row
+                        col = 1;
+                        row++;
+                        arr.add(new Vertex(row));
+                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                    }
+                    else{
+                        col++;
+                        arr.get(row-1).neighbors.add(new Neighbor(col,w));    
+                    }
+                }else{
+                    st = s.next();
+                    if(col == v && st.equals("*")){  //if new row
+                        col = 1;
+                        row++;
+                        arr.add(new Vertex(row));
                         w = Integer.MIN_VALUE;
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                }
-                else{
-                    col++;
-                    if(w == 0)
+                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                    }
+                    else if(st.equals("*")){
+                        col++;
                         w = Integer.MIN_VALUE;
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));    
-                }
+                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                    }
+                }   
             }
-            inputF.close();
         } catch (FileNotFoundException ex) {
             System.out.println("File \"" + filename + "\" not found.");
         }
@@ -93,7 +106,7 @@ public class Johnson_Algo {
             for(int j = 0; j < size; j++){
                 int w = D.get(i*size + j);
                 if(w == Integer.MAX_VALUE) //if it equals 'infinity'
-                    System.out.print("inf\t");
+                    System.out.print("*\t");
                 else
                     System.out.print(w + "\t");
             }
@@ -105,7 +118,7 @@ public class Johnson_Algo {
         for(Vertex u : G){
             for(Neighbor n : u.neighbors){
                 if(n.weight == Integer.MIN_VALUE)
-                    System.out.print("inf\t");
+                    System.out.print("*\t");
                 else
                     System.out.print(n.weight+"\t");
             }
@@ -235,9 +248,14 @@ public class Johnson_Algo {
     public static void main(String[] args) {
         ArrayList<Vertex> G = fileToArray("matrix.txt");
         int size = G.size();
+        int size2 = G.get(0).neighbors.size();
+        
+        if(size != size2)
+            throw new IllegalArgumentException("invalid matrix size");
         
         //displayMatrix(G);  //TEST: SEE ADJACENCY MATRIX
         ArrayList<Integer> D = Johnson(G);
+        
         if(D == null)
             System.out.println("The graph contains a negative-weight cycle.");
         else
