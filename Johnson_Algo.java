@@ -10,6 +10,7 @@ a v x v matrix representing all pairs shortest paths.
  */
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
@@ -58,45 +59,41 @@ public class Johnson_Algo {
         int w = 0;
         int v = 0;
         String st = null;
-        try {
-            s = new Scanner(new File(filename));
-            //s.useDelimiter("");
-            while (s.hasNext()){
-                if(s.hasNextInt()){
-                    w = s.nextInt();
-                    if(col == 0 && row == 0){   //if first run
-                        v = w;
-                        col++;
-                        col = v; //to create new row
-                    }
-                    else if(col == v){  //if new row
-                        col = 1;
-                        row++;
-                        arr.add(new Vertex(row));
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                    }
-                    else{
-                        col++;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));    
-                    }
-                }else{
-                    st = s.next();
-                    if(col == v && st.equals("*")){  //if new row
-                        col = 1;
-                        row++;
-                        arr.add(new Vertex(row));
-                        w = Integer.MIN_VALUE;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                    }
-                    else if(st.equals("*")){
-                        col++;
-                        w = Integer.MIN_VALUE;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                    }
+        InputStream in = Johnson_Algo.class.getResourceAsStream(filename);
+        s = new Scanner(in);
+        while (s.hasNext()){
+            if(s.hasNextInt()){
+                w = s.nextInt();
+                if(col == 0 && row == 0){   //if first run
+                    v = w;
+                    col++;
+                    col = v; //to create new row
+                }
+                else if(col == v){  //if new row
+                    col = 1;
+                    row++;
+                    arr.add(new Vertex(row));
+                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                }
+                else{
+                    col++;
+                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                }
+            }else{
+                st = s.next();
+                if(col == v && st.equals("*")){  //if new row
+                    col = 1;
+                    row++;
+                    arr.add(new Vertex(row));
+                    w = Integer.MIN_VALUE;
+                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                }
+                else if(st.equals("*")){
+                    col++;
+                    w = Integer.MIN_VALUE;
+                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
                 }   
             }
-        } catch (FileNotFoundException ex) {
-            System.out.println("File \"" + filename + "\" not found.");
         }
         return arr;
     }
