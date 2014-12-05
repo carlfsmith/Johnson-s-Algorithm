@@ -51,89 +51,81 @@ class Neighbor {
 
 public class Johnson_Algo {
     
-    public static ArrayList<Vertex> fileToArray(String filename) {
-        ArrayList<Vertex> arr = new ArrayList<>();
-        Scanner s;
+    public static ArrayList<ArrayList<Vertex>> fileToArray(String filename) {
+        ArrayList<ArrayList<Vertex>> cases = new ArrayList<>();
+        Scanner inputF;
         int col = 0;
         int row = 0;
         int w = 0;
         int v = 0;
         String st = null;
-<<<<<<< HEAD
+        
         try {
-            s = new Scanner(new File(filename));
+            inputF = new Scanner(new File(filename));
+            
+            if(inputF.hasNextInt()){     //case # in element # 0 element 
+                cases.add(new ArrayList<Vertex>());
+                int n = inputF.nextInt();
+                cases.get(0).add(new Vertex(n));
+            }
+            
+            int idx = 0;        //index for cases array
+            boolean newCase = true; //identifies if a news case arrises
+            int caseLength = -1;    //identifies number of numbers in case
+            int caseIdx = 1;        //keeps count of matrix numbers
             //s.useDelimiter("");
-            while (s.hasNext()){
-                if(s.hasNextInt()){
-                    w = s.nextInt();
-                    if(col == 0 && row == 0){   //if first run
-                        v = w;
-                        col++;
-                        col = v; //to create new row
-                    }
-                    else if(col == v){  //if new row
+            while (inputF.hasNext()){
+                if(newCase){                    //at beginning of case
+                    int value = inputF.nextInt();
+                    caseLength = value * value;
+                    newCase = false;
+                    caseIdx = 1;    //reset
+                    idx++;
+                    cases.add(new ArrayList<Vertex>());
+                    row = 0;
+                    w = 0;
+                    v = value;
+                    col = v; //to create new row
+                    continue;
+                }
+                
+                if(caseIdx == caseLength){    //at end of case
+                    newCase = true; //reset
+                }
+                
+                if(inputF.hasNextInt()){
+                    w = inputF.nextInt();
+                    if(col == v){  //if new row
                         col = 1;
                         row++;
-                        arr.add(new Vertex(row));
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                        cases.get(idx).add(new Vertex(row));
+                        cases.get(idx).get(row-1).neighbors.add(new Neighbor(col,w));
                     }
                     else{
                         col++;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));    
+                        cases.get(idx).get(row-1).neighbors.add(new Neighbor(col,w));    
                     }
                 }else{
-                    st = s.next();
+                    st = inputF.next();
                     if(col == v && st.equals("*")){  //if new row
                         col = 1;
                         row++;
-                        arr.add(new Vertex(row));
+                        cases.get(idx).add(new Vertex(row));
                         w = Integer.MIN_VALUE;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                        cases.get(idx).get(row-1).neighbors.add(new Neighbor(col,w));
                     }
                     else if(st.equals("*")){
                         col++;
                         w = Integer.MIN_VALUE;
-                        arr.get(row-1).neighbors.add(new Neighbor(col,w));
+                        cases.get(idx).get(row-1).neighbors.add(new Neighbor(col,w));
                     }
-=======
-        InputStream in = Johnson_Algo.class.getResourceAsStream(filename);
-        s = new Scanner(in);
-        while (s.hasNext()){
-            if(s.hasNextInt()){
-                w = s.nextInt();
-                if(col == 0 && row == 0){   //if first run
-                    v = w;
-                    col++;
-                    col = v; //to create new row
-                }
-                else if(col == v){  //if new row
-                    col = 1;
-                    row++;
-                    arr.add(new Vertex(row));
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                }
-                else{
-                    col++;
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                }
-            }else{
-                st = s.next();
-                if(col == v && st.equals("*")){  //if new row
-                    col = 1;
-                    row++;
-                    arr.add(new Vertex(row));
-                    w = Integer.MIN_VALUE;
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
-                }
-                else if(st.equals("*")){
-                    col++;
-                    w = Integer.MIN_VALUE;
-                    arr.get(row-1).neighbors.add(new Neighbor(col,w));
->>>>>>> origin/master
                 }   
+                caseIdx++;
             }
+        } catch (FileNotFoundException ex) {
+            System.out.println("File \"" + filename + "\" not found.");
         }
-        return arr;
+        return cases;
     }
     
     public static void displayMatrix(ArrayList<Integer> D, int size){
@@ -281,20 +273,36 @@ public class Johnson_Algo {
     }
     
     public static void main(String[] args) {
-        ArrayList<Vertex> G = fileToArray("matrix.txt");
-        int size = G.size();
-        int size2 = G.get(0).neighbors.size();
+        ArrayList<ArrayList<Vertex>> cases = fileToArray("matrix.txt");
         
-        if(size != size2)
-            throw new IllegalArgumentException("invalid matrix size");
+        boolean firstRun = true;
+        int caseIdx = 1;
         
-        //displayMatrix(G);  //TEST: SEE ADJACENCY MATRIX
-        ArrayList<Integer> D = Johnson(G);
+        for(ArrayList<Vertex> G : cases){
+            int size = G.size();
+            int size2 = G.get(0).neighbors.size();
+            
+            if(firstRun){
+                firstRun = false;
+                continue;
+            }
+            
+            if(size != size2)
+                throw new IllegalArgumentException("invalid matrix size");
+
+            //displayMatrix(G);  //TEST: SEE ADJACENCY MATRIX
+            ArrayList<Integer> D = Johnson(G);
+
+            if(D == null)
+                System.out.println("The graph contains a negative-weight cycle.");
+            else{
+                System.out.println("Case "+caseIdx+": ");
+                displayMatrix(D, size);
+                System.out.println();
+            }
+            caseIdx++;
+        }
         
-        if(D == null)
-            System.out.println("The graph contains a negative-weight cycle.");
-        else
-            displayMatrix(D, size);
     }
     
 }
